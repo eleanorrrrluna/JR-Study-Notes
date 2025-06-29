@@ -2,30 +2,6 @@
 
 ### Goal: Build, Test and Deploy a web-app to AWS Elastic Beanstalk from scratch
 
-## What is CI/ CD?
-![Alt text](../images/CI_CD.png?raw=true)
-
-### Continuous Integration
-Successful **Continuous Integration** means code changes to a web-app are regularly built, tested, and merged to a shared
-repository automatically via integration tools like Jenkins, Github Actions (GHA), Bitbucket pipelines.
-It’s a solution to the problem of
-1. having too many developers writing code changes to a web-app that might conflict with each other.
-2. code testing and validation before merging.
-
-### Continuous delivery
-Continuous delivery usually means a developer’s changes to an application are automatically bug tested and
-uploaded to a repository (like GitHub or a container registry), where they can then be deployed to a live
-production environment by the operations team.
-It’s an answer to the problem of poor visibility and communication between dev and business teams.
-To that end, the purpose of continuous delivery is to ensure that it takes minimal effort to deploy new code.
-
-### Continuous deployment
-Continuous deployment (the other possible “CD”) can refer to automatically releasing a developer’s changes from
-the repository to production, where it is usable by customers. It addresses the problem of overloading operations
-teams with manual processes that slow down app delivery. It builds on the benefits of continuous delivery by
-automating the next stage in the pipeline.
-
-
 # Hands-on
 
 ## At the end of this hands-on
@@ -66,11 +42,34 @@ npm -v # Should print "10.9.2".
 # i) Hands-on CI
 
 ## 1.Create and Run a web-app
-Create a sample React web-app skeleton (nextjs.js) with npx: https://react.dev/learn/start-a-new-react-project 
+首先，通过nps创建一个web-app框架，命名为my-app。Create a sample React web-app skeleton (nextjs.js) with npx. Set `my-app` as your project name and proceed with default options for other questions.
 
-Set `my-app` as your project name and proceed with default options for other questions.
+关于Node.js和next.js的关系：
+简单来说：
+✅ Node.js
+	•	是一个运行 JavaScript 的 后端运行时环境（基于 Chrome V8 引擎）
+	•	让你可以在服务器上用 JavaScript 编写后端逻辑
+✅ Next.js
+	•	是一个 基于 Node.js 的 React 框架
+	•	用来开发服务端渲染（SSR）、静态生成（SSG）和客户端渲染（CSR）结合的现代 Web 应用
+	•	它在 Node.js 环境下运行，用 Node.js 提供服务器端渲染能力
+
+所以：
+👉 Node.js 是基础运行环境
+👉 Next.js 是在 Node.js 上构建的、专注前端渲染和全栈开发的框架
+
+而npm（Node Package Manager）是 Node.js 的包管理器，用来：
+
+✅ 安装、更新、卸载 JavaScript 库或依赖（package）
+✅ 管理依赖版本，记录在 package.json
+✅ 运行脚本，比如 npm run build、npm test
+
+简单说：
+	•	如果你在用 Node.js 做项目开发，npm 是管理依赖和脚本运行的核心工具。
+	•	它也能用来发布、分享自己的 JS 库到 npm 官方仓库。
 ```
 $ npx create-next-app@latest
+
 Need to install the following packages:
 create-next-app@15.1.6
 Ok to proceed? (y)
@@ -105,6 +104,8 @@ You should see but on localhost:3000:
 
 ## 2.Dockerise your web-app
 Add a Dockerfile to my-app folder
+第二步，创建完web并且成功访问localhost:3000后，下一步就是把这个web镜像化。这里要提到一点，my-app其实就是一个本地repo,因为当你处于my-app里，然后在终端输入ls -a，就可以看到隐藏文件夹.git，.gitignore 和.github。
+综上，我们要像镜像化这个web就要先在my-app文件夹里添加一个dockerfile文档，就去terminal 里面输入commond: vi Dockerfile，然后复制粘贴下方的信息,保存后退出，就实现了在my-app里创建dockerfile的任务。
 
 ```
 FROM node:22 AS build
@@ -134,17 +135,20 @@ Your folder structure should now looks like this:
   <img src="../images/Structure-nextjs.png" width="50%" >
 </p>
 
-You can run locally the docker containers for testing your Dockerfile (`-f Dockerfile` is optional)
+要测试dockerfile是否成功，可以运行以下指令，You can run locally the docker containers for testing your Dockerfile (`-f Dockerfile` is optional)
 ```
 docker build -t my-app -f Dockerfile .
 docker run --rm -d -p 3000:3000 --name nextjs-react-app my-app
 ```
-
+以上两行指令的意义：
+把dockerfile和当前目录的所有文件都作为构建的上下文去建一个名为my-app的镜像；
+在后台运行一个基于my-app镜像的容器，将容器内的3000端口映射到宿主机的3000端口，并命名为nextjs-react-app,容器停止后自动删除。
 
 ## 3. Add the repo to Github
-Create a repo in your github
+创建一个新的远程repo，并与本地分支建立首次追踪关系，Create a repo in your github
 ![Alt text](../images/Create_new_repo.png?raw=true)
 
+并通过第2小节展示的指令把这个远程repo取名为origin然后把origin添加到本地，接着把本地当前的分支命名为main，再把main首次推送到origin仓库，并建立追踪关系，以后只需要push就可以。
 Follow the steps in the second section (``...or push an existing repository from the command line``) to push existing repo from the command line
 ![Alt text](../images/Steps.png?raw=true)
 
@@ -152,11 +156,17 @@ Follow the steps in the second section (``...or push an existing repository from
 ## 4. Let us setup Github Action CI
 Note: 
 + The uses field in the Setup Node.js step specifies the actions/setup-node action to set up the Node.js environment. 
-This action automatically installs the specified version of Node.js and sets up the environment variables.
-+ Your dockerhub username and password were saved in the sample-docker-react repo's `Secrets and variables` (https://github.com/<your_org>/sample-docker-react/settings/secrets/actions)
+This action automatically installs the specified version of Node.js and sets up the environment variables.这一步就是自动化CI的关键，把本地repo my-app与GitHub远程repo sample-docker-react关联起来，并通过在远程repo的‘secrets and variables'里添加dockerhub的登入名和登入密码去创建与docker的关联，进而实现把这个装有my-app代码的repo镜像化。
+
++ 把你的dockerhub登入名和登入密码存在刚刚创建并与本地repo建立追踪的repo“机密与变量”里。Your dockerhub username and password were saved in the sample-docker-react repo's `Secrets and variables` (https://github.com/<your_org>/sample-docker-react/settings/secrets/actions)
 <p align="center">
   <img src="../images/gha_secrets.png">
 </p>
+
+在终端输入：mkdir -p .github/workflows (注意是workflows,s不能少，不然系统不能辨别是pipeline的文件)去创建workflows文件夹在.github文件夹里面。
+接着在终端输入：code . 打开vscode，在.github/workflows文件夹里创建一个文件：ci.yml,复制粘贴以下文档，在这个ci.yml文档里我们可以看到这个自动化ci的流程，包括docker用户名和密码被编辑。保存退出后，在终端里输入：git add. ,git commit -m "adding ci.yml" ,git push. 完成后去到github sample-docker-react repo，点击actions，可以看到这个ci成功build。
+
+要注意ci.yml正确创建在workflows这个pipeline文件夹里而不是.github文件夹里，否则无法action.
 
 Create a new YAML file named `ci.yml` or something similar in the `.github/workflows` directory (create the directory if it does not exist) in your repository. 
 Copy and paste the example workflow code into the file and commit it to your repository. 
