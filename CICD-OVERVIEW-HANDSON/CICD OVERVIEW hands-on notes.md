@@ -393,3 +393,93 @@ Make sure you adjust the following according to your settings
 ```
 
 Checkout a new branch and Commit your changes. Then raise and merge a PR, see what will happen. 
+
+Q&A
+
+
+问题1，在创建一个新的 IAM role，取名为BTN_EC2_profile时，选择EC2作为use case并赋予这个role一些elastic beanstalk的权限，但我从未专门去ec2创建任何instance，那为什么在创建elastic beanstalk application时，在configure service access里会自动出现ec2 key pair的选项，而且ec2 instance profile可以选择我刚刚建的IAM role with the name BTN_EC2_profile？这里为什么需要用到ec2 key pair？
+
+回答：
+
+ IAM Role是「一套权限」，是AWS 给你一个可以被 EC2 实例使用的「身份凭证」，；它用来 临时授权，常被 EC2、Lambda 等 AWS 服务「扮演」来访问资源。你在 IAM 里创建的 role（比如你给它取名 BTN_EC2_profile），如果在创建时选了 EC2 use case，那相当于你告诉 AWS这个角色是给 EC2 实例用的。如此一来，AWS 就会自动为你生成一个 同名的 EC2 instance profile。这是AWS干的，显然你所做的只是创建 IAM role，并没有专门跑到EC2去建一个instance。而且新手在这里要特别注意： EC2 instance profile不是 EC2 instance！！！这是两回事：
+
+✅ EC2 Instance Profile：
+	•	本质是一个 IAM Role 的「包装器」，用来附加到 EC2 实例上。
+	•	它 不是一台机器，只是一个「权限身份」容器，即装着这个IAM Role 所拥有的权限的容器。
+那可以理解为，你每创建一个选择EC2 作为use case的IAM Role ，AWS就会自动帮你生成一个装着这个IAM Role 所拥有的权限的EC2 instance profile容器，之后可以用来附加到 EC2 实例上用。
+
+✅ EC2 Instance：
+	•	就是实际运行在 AWS 上的 虚拟机服务器。
+
+小结：
+
+所以可以明确一点，你创建 IAM role ≠ 创建 EC2 实例，只是做了准备，以后你在 启动 EC2 实例时，可以把这个AWS帮你自动生成的 Instance Profile容器 附加到这台机器，也就是把这个EC2 实例和这个IAM Role绑定了，即这个EC2 实例拥有了这个IAM Role带有的权限，这样 这个EC2 实例上的应用就能用这个 role 的权限访问 AWS 资源（比如 S3）。
+
+
+Elastic Beanstalk 环境里一定会有 EC2 实例，你的 app 实际会部署并运行在这些 EC2 上。当你在 Elastic Beanstalk 上创建应用环境时，AWS 会 自动在 EC2 里帮你启动一个（或多个）虚拟机实例，来运行你的代码。这些 EC2 实例需要选择一个EC2 Instance Profile，也就是绑定一个 IAM Role，才能实现用于让这些实例拥有这个IAM Role权限去访问 AWS 资源的目的（比如拉取镜像、写日志到 CloudWatch 等）。
+
+Elastic Beanstalk：AWS 提供的「全托管平台」，它自动帮你创建、配置、伸缩、更新 EC2 实例，并且能整合负载均衡、存储、日志等。而EC2只是AWS 提供的裸虚拟机，你自己搭建、配置、管理环境
+
+关于 Key Pair：因为 Elastic Beanstalk 部署应用的底层，其实就是在 AWS EC2 上建机器，AWS 给你一个选项：
+
+「如果你需要，将来手动 SSH 到 EC2 排查问题，请选择或创建一个 Key Pair」
+
+如果你没选 key pair，将来你就不能用 SSH 登录进去看日志或调试机器。创建一个 Key Pair不是必须（你可以选择「不生成 key pair」）
+	•	但 AWS 给你留了「后门」，如果你想 SSH 登录机器，就必须先生成并下载好 key pair 文件（.pem），因为 AWS 只在机器创建时设置公钥
+
+🎯 总结
+
+Beanstalk = 「帮你自动创建+管理 EC2 机器」的服务
+	•	所以需要 EC2 key pair（可选） → 如果你想手动连进去看机器
+	•	需要 EC2 instance profile（必须） → 让机器拥有 IAM 角色权限
+
+
+
+
+
+问题2，结合上文，我想接着问为什么We need an IAM user with proper permissions so that github action can deploy the app on your behalf？是因为这个CD pipeline最终要在Github Actions里部署，前面的一系列操作是在AWS service进行的，所以需要创建一个 IAM USER并给这个USE创建access key，才能最终实现把这个IAM USER和github关联起来的目的吗？
+
+回答：
+
+是的！因为 GitHub Actions 运行在 GitHub 的服务器上（即「云端」的 CI/CD 服务），它 不是 AWS 自己的服务。为了让 GitHub Actions (AWS 外部) 能用 AWS API 部署应用（比如把包上传 S3、更新 Elastic Beanstalk 环境）时，需要 AWS 的身份凭证。，你要在 AWS 创建一个 IAM User，授予它权限，并把 Access Key 填到 GitHub Secrets 中，这样 GitHub Actions 就能代表你操作 AWS 了！
+
+✅ 整个流程逻辑：
+1️⃣ 你在 AWS 上配置 Elastic Beanstalk、EC2 Role、Key Pair 等，这是 AWS 内部的资源和角色
+2️⃣ 但要让 GitHub Actions（外部）「远程控制 AWS」部署新版本，需要用 IAM User + Access Key 来让 GitHub 拥有权限去调用 AWS API
+
+
+
+
+对于以上2问题及其答案，我们可以逆推：
+
+这个大语境是，我们的最终任务是部署CD pipeline,它可以在 GitHub Actions、CodePipeline 等任何 CI/CD 工具里完成。本次我们选用GitHub Actions。而GitHub Actions 本质只是一个「自动化脚本运行环境」和「运行脚本」的平台。GitHub Actions 的工作环境 运行在 GitHub 的云端服务器上，它可以：
+	•	获取你的代码
+	•	编译、测试、打包
+	•	执行各种命令行脚本
+
+但它本身并不能创建脚本，更不能部署工作流水线。要明确CD的目的是把已经打包好的应用部署到 AWS 环境（比如 Elastic Beanstalk）。
+
+由于 GitHub Actions 运行在 GitHub 的服务器上（即「云端」的 CI/CD 服务），它 不是 AWS 自己的服务。为了让 GitHub Actions (AWS 外部) 能用 AWS API 部署应用（比如把包上传 S3、更新 Elastic Beanstalk 环境）时，需要 AWS 的身份凭证。，你要在 AWS 创建一个 IAM User，授予它权限，并把 Access Key 填到 GitHub Secrets 中，这样 GitHub Actions 就能代表你操作 AWS 了！通俗总结，GitHub Actions 是一个外部工人，它不住在 AWS 家里，要想帮你部署 AWS 上的应用，就得 敲门（用 API）+ 出示凭证（Access Key）。
+
+回顾CI的部署，并不需要用到AWS，那为什么CD需要呢？
+
+这里的区别在于 CI 和 CD 阶段各自的职责：
+
+✅ CI（Continuous Integration） —— 持续集成
+	•	目的是在 GitHub Actions 等 CI 工具里 拉取代码、编译、运行测试、打包
+	•	这些Build 的任务只在 GitHub 环境里就能完成，不需要接触 AWS
+
+✅ CD（Continuous Deployment/Delivery） —— 持续部署
+	•	目标是 把已经打包好的应用部署到 AWS 环境（比如 Elastic Beanstalk）
+	•	GitHub 环境里只能build不能deploy，这些Deploy 的任务就需要 用到 AWS API、上传部署包、触发环境更新
+	•	因为 GitHub Actions 本身不是 AWS 服务，所以必须先拿到 AWS 的权限（通过 IAM User + Access Key），才能在 CD 阶段控制 AWS 上的资源
+
+⸻
+
+🎯 总结
+	•	CI 只是build and test→ 不需要 AWS，github环境里就能完成；
+	•	CD 是把产物deploy到 AWS → 必须让 GitHub Actions 拥有访问 AWS 的权限
+
+
+
+
