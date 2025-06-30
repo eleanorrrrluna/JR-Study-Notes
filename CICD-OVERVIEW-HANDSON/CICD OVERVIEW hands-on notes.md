@@ -219,6 +219,13 @@ The `jobs` section defines a single job named **build**, which runs on the **ubu
 * Building a Docker image using the file `Dockerfile`
 * Running tests  
 * Loging in to DockerHub and and pushing the image
+👉 jobs 部分 定义了一个叫 build 的任务，这个任务在 ubuntu-latest 这个环境里跑。
+👉 这个任务会做这些事：
+	•	把你仓库里的代码拉下来
+	•	在环境里装好 Node.js
+	•	用 Dockerfile 来构建 Docker 镜像
+	•	跑测试
+	•	登录 DockerHub，把镜像推上去
 
 Now push the changes to your git repo
 ```
@@ -228,6 +235,11 @@ git commit -m "Introduce github action CI pipeline"
 git push --set-upstream origin "feature/introduce_ci"
 git checkout main
 ```
+	•	新建并切换到一个分支叫 feature/introduce_ci
+	•	把改动都加入暂存区
+	•	提交改动，写上说明 Introduce github action CI pipeline
+	•	把这个分支推到远程仓库
+	•	最后切回 main 分支
 Click the link in the GitHub UI to create a pull request and see what happens.
 
 Further reading for pushing images to dockerhub: https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-docker-hub
