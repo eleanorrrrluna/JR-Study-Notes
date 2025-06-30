@@ -42,7 +42,7 @@ npm -v # Should print "10.9.2".
 # i) Hands-on CI
 
 ## 1.Create and Run a web-app
-首先，通过nps创建一个web-app框架，命名为my-app。Create a sample React web-app skeleton (nextjs.js) with npx. Set `my-app` as your project name and proceed with default options for other questions.
+首先，通过npx创建一个web-app框架，命名为my-app。Create a sample React web-app skeleton (nextjs.js) with npx. Set `my-app` as your project name and proceed with default options for other questions.
 
 关于Node.js和next.js的关系：
 简单来说：
@@ -105,7 +105,7 @@ You should see but on localhost:3000:
 ## 2.Dockerise your web-app
 Add a Dockerfile to my-app folder
 第二步，创建完web并且成功访问localhost:3000后，下一步就是把这个web镜像化。这里要提到一点，my-app其实就是一个本地repo,因为当你处于my-app里，然后在终端输入ls -a，就可以看到隐藏文件夹.git，.gitignore 和.github。
-综上，我们要像镜像化这个web就要先在my-app文件夹里添加一个dockerfile文档，就去terminal 里面输入commond: vi Dockerfile，然后复制粘贴下方的信息,保存后退出，就实现了在my-app里创建dockerfile的任务。
+综上，我们要像镜像化这个web就要先在my-app文件夹里创建一个dockerfile文档，就去terminal 里面输入commond: vi Dockerfile，然后复制粘贴下方的信息,保存后退出，就实现了在my-app里创建dockerfile的任务，dockerfile里的代码是用来把刚刚建的web镜像化。
 
 ```
 FROM node:22 AS build
@@ -142,13 +142,13 @@ docker run --rm -d -p 3000:3000 --name nextjs-react-app my-app
 ```
 以上两行指令的意义：
 把dockerfile和当前目录的所有文件都作为构建的上下文去建一个名为my-app的镜像；
-在后台运行一个基于my-app镜像的容器，将容器内的3000端口映射到宿主机的3000端口，并命名为nextjs-react-app,容器停止后自动删除。
+在后台运行一个基于my-app镜像的容器，这个容器命名为nextjs-react-app，将容器内的3000端口映射到宿主机的3000端口，容器停止后自动删除。
 
 ## 3. Add the repo to Github
-创建一个新的远程repo，并与本地分支建立首次追踪关系，Create a repo in your github
+在github创建一个远程repo，命名为sample-docker-react，并与本地分支建立首次追踪关系，Create a repo in your github
 ![Alt text](../images/Create_new_repo.png?raw=true)
 
-并通过第2小节展示的指令把这个远程repo取名为origin然后把origin添加到本地，接着把本地当前的分支命名为main，再把main首次推送到origin仓库，并建立追踪关系，以后只需要push就可以。
+并通过第2小节展示的指令可知，我们要做的是把这个远程仓库url添加到本地，并取名为origin；接着把my-app所在的本地分支命名为main，再把main首次推送到origin仓库，由此my-app repo和sample-docker-react repo建立追踪关系。
 Follow the steps in the second section (``...or push an existing repository from the command line``) to push existing repo from the command line
 ![Alt text](../images/Steps.png?raw=true)
 
@@ -164,7 +164,7 @@ This action automatically installs the specified version of Node.js and sets up 
 </p>
 
 在终端输入：mkdir -p .github/workflows (注意是workflows,s不能少，不然系统不能辨别是pipeline的文件)去创建workflows文件夹在.github文件夹里面。
-接着在终端输入：code . 打开vscode，在.github/workflows文件夹里创建一个文件：ci.yml,复制粘贴以下文档，在这个ci.yml文档里我们可以看到这个自动化ci的流程，包括docker用户名和密码被编辑。保存退出后，在终端里输入：git add. ,git commit -m "adding ci.yml" ,git push. 完成后去到github sample-docker-react repo，点击actions，可以看到这个ci成功build。
+接着在终端输入：code . 打开vscode，在.github/workflows文件夹里创建一个yml文件：ci.yml,复制粘贴以下文档;在这个ci.yml文档里我们可以看到自动化ci的流程，包括docker用户名和密码被编辑。保存退出后，在终端里输入：git add. ,git commit -m "adding ci.yml" ,git push. 完成后去到github sample-docker-react repo，点击actions，可以看到这个ci成功build。
 
 要注意ci.yml正确创建在workflows这个pipeline文件夹里而不是.github文件夹里，否则无法action.
 
