@@ -219,6 +219,7 @@ The `jobs` section defines a single job named **build**, which runs on the **ubu
 * Building a Docker image using the file `Dockerfile`
 * Running tests  
 * Loging in to DockerHub and and pushing the image
+
 👉 jobs 部分 定义了一个叫 build 的任务，这个任务在 ubuntu-latest 这个环境里跑。
 👉 这个任务会做这些事：
 	•	把你仓库里的代码拉下来
