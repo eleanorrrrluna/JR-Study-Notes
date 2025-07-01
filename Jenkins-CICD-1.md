@@ -44,6 +44,50 @@ sudo usermod -aG docker <yourusername>
 
 
 
+在做 Jenkins + Docker 自动化部署时经常会碰到Docker in/outside of Docker 情况
+
+🎯 什么是 “Docker in Docker”（简称：DinD）
+
+Docker in Docker 就是指：
+
+在一个 Docker 容器内部，再运行 Docker 守护进程（Docker Daemon），并让这个容器可以运行其它容器。
+
+也就是说：你在容器里又跑了一个 Docker 引擎，相当于“容器里再跑容器”。
+
+宿主机 Docker
+└── Jenkins 容器（运行 Docker 守护进程）
+     └── 构建时运行的容器（比如运行 docker build 的时候）
+
+
+❓为什么有人要用 Docker in Docker？
+主要是为了解决这种需求：
+
+容器里的 Jenkins 要自己构建 Docker 镜像，并运行容器。
+
+如果你不挂载宿主机的 Docker socket，而是让 Jenkins 容器自己运行一个独立的 Docker 引擎（daemon），那你就用到了 Docker-in-Docker。
+
+❗ 但是 “Docker in Docker” 一般 不推荐生产使用！！！
+
+
+
+✅ 替代方案：Docker Outside of Docker（DooD）
+
+这是最常见、推荐的做法，不需要在容器里运行 Docker 守护进程，只有 CLI，使用宿主的 Daemon。
+
+你只在 Jenkins 容器里安装 Docker CLI，然后把宿主机的 Docker socket 挂进去。
+
+这样 Jenkins 容器内部调用 docker build，实际操作的还是 宿主机的 Docker 引擎，更安全高效。
+
+配置方式：
+docker run -d --name jenkins \
+  -p 8080:8080 \
+  -v jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins/jenkins:lts
+
+
+
+
 ### Steps
 
 #### 1. Create a folder to hold Jenkins data
