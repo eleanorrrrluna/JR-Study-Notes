@@ -25,19 +25,21 @@ sudo usermod -aG docker <yourusername>
 ```
 当目标是在GCP 上运行 Jenkins，并使用 Docker，操作流程：
 
-   
-	1.	GCP VM 是你租的远程服务器（像一台云端电脑）
+* 1.GCP VM 是你租的远程服务器（像一台云端电脑）
 → 因为 Jenkins 要“跑”在某个机器上。
-	2.	在这台 GCP VM 云端电脑上选择装 Ubuntu 这个操作系统是因为它是流行的 Linux 系统
+
+* 2.在这台 GCP VM 云端电脑上选择装 Ubuntu 这个操作系统是因为它是流行的 Linux 系统
 → 稳定、免费、适合跑 Jenkins、Docker 等服务。
-	3.	在这台 GCP VM 云端电脑的 Ubuntu 操作系统里装 Docker 是为了用Docker container运行 Jenkins
+
+* 3.在这台 GCP VM 云端电脑的 Ubuntu 操作系统里装 Docker 是为了用Docker container运行 Jenkins
 → 用容器跑 Jenkins 有以下好处：
 	•	简单：不用手动配置很多系统依赖；
 	•	可移植：跑在任何装了 Docker 的地方；
 	•	可升级/销毁/重建更方便。
-	4.	最终，只需要在 Docker 容器里运行 Jenkins 就行
+
+* 4.最终，只需要在 Docker 容器里运行 Jenkins 就行
  
-        5.      另外，容器里的 Jenkins 要自己构建 Docker 镜像，并运行容器。所以在成功验证可以进入jenkins操作页面后，还要去返回jenkins container里面安装Docker CLI
+* 5.另外，容器里的 Jenkins 要自己构建 Docker 镜像，并运行容器。所以在成功验证可以进入jenkins操作页面后，还要去返回jenkins container里面安装Docker CLI
 → 部署 Jenkins 只是为了运行 Jenkins 服务，而Jenkins 如果需要运行 Docker 命令来构建、运行或推送镜像等，那这些命令就需要用 
   Docker CLI（Command-Line Interface）来运行。 这里有一个“容器里再跑容器”的感觉！
   这里有一个概念Docker CLI不是Docker 。Docker CLI（Command-Line Interface） 是你在终端中输入的 docker 命令；它不是 Docker 引擎（daemon），而是 客户端程序；它向 Docker 后台服务（dockerd）发送命令，比如创建容器、构建镜像、推送仓库等。
