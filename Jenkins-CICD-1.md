@@ -25,7 +25,8 @@ sudo usermod -aG docker <yourusername>
 ```
 当目标是在GCP 上运行 Jenkins，并使用 Docker，操作流程：
 
-  1.	GCP VM 是你租的远程服务器（像一台云端电脑）
+   
+	1.	GCP VM 是你租的远程服务器（像一台云端电脑）
 → 因为 Jenkins 要“跑”在某个机器上。
 	2.	在这台 GCP VM 云端电脑上选择装 Ubuntu 这个操作系统是因为它是流行的 Linux 系统
 → 稳定、免费、适合跑 Jenkins、Docker 等服务。
@@ -35,12 +36,11 @@ sudo usermod -aG docker <yourusername>
 	•	可移植：跑在任何装了 Docker 的地方；
 	•	可升级/销毁/重建更方便。
 	4.	最终，只需要在 Docker 容器里运行 Jenkins 就行
-  5.  在成功进入jenkins操作页面后，还要去jenkins container里面安装Docker CLI
-  因为部署 Jenkins 本身只是运行 Jenkins 服务，而Jenkins 如果需要运行 Docker 命令来构建、运行或推送镜像等，那这些命令就需要在 
-  Jenkins 所在的容器内运行。 这里有一个“容器里再跑容器”的感觉！
-  
-  如果你在 Jenkins、CI/CD 脚本中看到要“安装 Docker CLI”，它的意思就是要能运行 docker build、docker push 等命令，但通常不
-  会再装一个后台服务。这里有一个概念Docker CLI不是Docker 。Docker CLI（Command-Line Interface） 是你在终端中输入的 docker 命令；它不是 Docker 引擎（daemon），而是 客户端程序；它向 Docker 后台服务（dockerd）发送命令，比如创建容器、构建镜像、推送仓库等。
+ 
+        5.      另外，容器里的 Jenkins 要自己构建 Docker 镜像，并运行容器。所以在成功验证可以进入jenkins操作页面后，还要去返回jenkins container里面安装Docker CLI
+→ 部署 Jenkins 只是为了运行 Jenkins 服务，而Jenkins 如果需要运行 Docker 命令来构建、运行或推送镜像等，那这些命令就需要用 
+  Docker CLI（Command-Line Interface）来运行。 这里有一个“容器里再跑容器”的感觉！
+  这里有一个概念Docker CLI不是Docker 。Docker CLI（Command-Line Interface） 是你在终端中输入的 docker 命令；它不是 Docker 引擎（daemon），而是 客户端程序；它向 Docker 后台服务（dockerd）发送命令，比如创建容器、构建镜像、推送仓库等。
 
 
 
@@ -184,10 +184,15 @@ You should see screen below after full installation.
 #### 6. Install `docker` CLI in your Jenkins container
 
 The official Jenkins image doesn’t contain Docker CLI. If you need to run docker related tasks, you need to install docker CLI in your Jenkins container.
+当你在 Jenkins、CI/CD 脚本中看到要“安装 Docker CLI”，它的意思就是要能运行 docker build、docker push 等命令。
 
-You can rebuild the Jenkins images by following the steps in [Jenkins official documentation](https://www.jenkins.io/doc/book/installing/docker/ ) (recommended). 
+常见方案是：Docker Outside of Docker（DooD）
+即不需要在容器里运行 Docker 守护进程。你只在 Jenkins 容器里安装 Docker CLI，然后把宿主机的 Docker socket 挂进去。这样 Jenkins 容器内部调用 docker build，实际操作的还是 宿主机的 Docker 引擎，更安全高效。
 
-Or install docker tool sets inside your Jenkins container. The release version of Jenkins image is based on Debian:
+这里有一个概念Docker CLI不是Docker 。Docker CLI（Command-Line Interface） 是你在终端中输入的 docker 命令；它不是 Docker 引擎（daemon），而是 客户端程序；它向 Docker 后台服务（dockerd）发送命令，比如创建容器、构建镜像、推送仓库等。
+
+
+ Install docker tool sets inside your Jenkins container. The release version of Jenkins image is based on Debian:
 
 1. Go into your Jenkins docker container
    ```
