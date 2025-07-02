@@ -33,6 +33,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC/k87ckXCbbHng5bnTGALgIpVe0bEvsa9M46a8/exE4
 其中id_ed25519是我的私钥文件名，eleanorcollins是我的终端用户名，同时和公钥结尾注释匹配。@34.125.253.245这串数字是vm external ip
 
 * Software: Install docker on Ubuntu: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+* 可以在终端输入sudo snap install docker去快速下载docker到ubuntu系统里
 
 P.S You can add your username to group `docker` so that you can run docker command without `sudo`
 ```
