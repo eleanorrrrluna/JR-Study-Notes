@@ -112,33 +112,6 @@ docker run --name jenkins \
            -p 50000:50000 \
            jenkins/jenkins:lts-jdk21
 ```
-
-```cmd
-// Windows CMD
-docker run --name jenkins ^
-           -u root ^
-           -d ^
-           -v %cd%:/var/jenkins_home ^
-           -v //var/run/docker.sock:/var/run/docker.sock ^
-           -p 80:8080 ^
-           -p 50000:50000 ^
-           jenkins/jenkins:lts-jdk21
-```
-
-```PowerShell
-// Windows PowerShell
-$pwd = (Get-Location).Path
-$pwd = $pwd -replace '\\', '/'
-docker run --name jenkins `
-           -u root `
-           -d `
-           -v "${pwd}:/var/jenkins_home" `
-           -v //var/run/docker.sock:/var/run/docker.sock `
-           -p 80:8080 `
-           -p 50000:50000 `
-           jenkins/jenkins:lts-jdk21
-```
-
 > Note:
 >
 > * `-u root` configures to run Jenkins by root user.
