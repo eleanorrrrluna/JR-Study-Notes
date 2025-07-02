@@ -17,6 +17,10 @@ This is to guide how to install Jenkins and run it in a Docker container.
 ### Pre-requisites
 
 * A VM (GCP VM is recommended, new users can get US$300 credits for 90 days) or a laptop
+创建完VM后，要把这个VM链接到本地终端的指令是：
+ssh -i ~/.ssh/id_ed25519 eleanorcollins@34.125.253.245
+其中id_ed25519是我的私钥文件名，eleanorcollins是我的终端用户名，同时和公钥结尾注释匹配。@34.125.253.245这串数字是vm external ip
+
 * Software: Install docker on Ubuntu: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
 
 P.S You can add your username to group `docker` so that you can run docker command without `sudo`
