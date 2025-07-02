@@ -18,8 +18,18 @@ This is to guide how to install Jenkins and run it in a Docker container.
 
 * A VM (GCP VM is recommended, new users can get US$300 credits for 90 days) or a laptop
 
-* 创建完VM后，要把这个VM链接到本地终端的指令是：
-ssh -i ~/.ssh/id_ed25519 eleanorcollins@34.125.253.245
+* 创建完VM后，要把这个VM链接到本地终端的步骤是：
+* 先在终端输入指令：ssh-keygen 去创建密钥，会显示：                                      Generating public/private ed25519 key pair.
+
+* 然后按回车把私钥公钥自动保存到：(/Users/eleanorcollins/.ssh/id_ed25519)
+
+* 接着cd ~/.ssh 通过cat id_ed25519.pub 可以提取公钥内容：
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC/k87ckXCbbHng5bnTGALgIpVe0bEvsa9M46a8/exE4 eleanorcollins@Mac
+* 复制粘贴到刚刚创建的vm ssh里。以上是准备工作。
+
+* 如果之前已经创建过密钥并添加到vm里，但是忘了密钥id，就先cd ~/.ssh 然后ls 罗列出包含的文件夹，找到钥匙文件夹，分别有id_ed25519      id_ed25519.pub
+
+* 接着ssh -i ~/.ssh/id_ed25519 eleanorcollins@34.125.253.245
 其中id_ed25519是我的私钥文件名，eleanorcollins是我的终端用户名，同时和公钥结尾注释匹配。@34.125.253.245这串数字是vm external ip
 
 * Software: Install docker on Ubuntu: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
